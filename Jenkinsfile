@@ -2,6 +2,7 @@ pipeline {
   agent any
 
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
@@ -12,10 +13,9 @@ pipeline {
       steps {
         withSonarQubeEnv('sonarqube') {
           sh '''
-            sonar-scanner \
+            ${tool 'sonar-scanner'}/bin/sonar-scanner \
             -Dsonar.projectKey=myapp \
-            -Dsonar.sources=. \
-            -Dsonar.login=$SONAR_TOKEN
+            -Dsonar.sources=.
           '''
         }
       }
