@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_ENV = 'sonarqube'
-        DOCKER_IMAGE  = 'devang883020/myapp'
+        DOCKER_IMAGE  = 'devangkube88/my-docker-app'
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
                 python3 -m venv venv
                 . venv/bin/activate
                 pip install --upgrade pip
-                pip install -r requirements.txt /app
+                pip install -r requirements.txt /app/
                 '''
             }
         }
@@ -62,7 +62,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_PASS')]) {
+                withCredentials([string(credentialsId: 'dockerhub-cred', variable: 'DOCKER_PASS')]) {
                     sh '''
                     echo "$DOCKER_PASS" | docker login -u devang883020 --password-stdin
                     docker push $DOCKER_IMAGE:latest
