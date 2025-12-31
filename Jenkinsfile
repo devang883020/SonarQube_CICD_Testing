@@ -11,12 +11,16 @@ pipeline {
 
     stage('SonarQube Analysis') {
       steps {
-        withSonarQubeEnv('sonarqube') {
-          sh '''
-            ${tool 'sonar-scanner'}/bin/sonar-scanner \
-            -Dsonar.projectKey=myapp \
-            -Dsonar.sources=.
-          '''
+        script {
+          def scannerHome = tool 'sonar-scanner'
+
+          withSonarQubeEnv('sonarqube') {
+            sh """
+              ${scannerHome}/bin/sonar-scanner \
+              -Dsonar.projectKey=myapp \
+              -Dsonar.sources=.
+            """
+          }
         }
       }
     }
