@@ -1,63 +1,83 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE_NAME = "devangkubde88/my-docker-app"
-    IMAGE_TAG  = "${BUILD_NUMBER}"
-  }
-
-  stages {
-
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        SONARQUBE_ENV = 'sonarqube'
+        DOCKER_IMAGE  = 'devang883020/myapp'
     }
 
-    stage('SonarQube Analysis') {
-      steps {
-        script {
-          def scannerHome = tool 'sonar-scanner'
-          withSonarQubeEnv('sonarqube') {
-            sh """
-              ${scannerHome}/bin/sonar-scanner \
-              -Dsonar.projectKey=myapp \
-              -Dsonar.sources=.
-            """
-          }
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage('Quality Gate') {
-      steps {
-        timeout(time: 2, unit: 'MINUTES') {
-          waitForQualityGate abortPipeline: true
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
         }
-      }
-    }
 
-    stage('Docker Build') {
-      steps {
-        sh """
-          docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-        """
-      }
-    }
-
-    stage('Docker Push') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub-cred',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          sh """
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push ${IMAGE_NAME}:${IMAGE_TAG}
-          """
+        stage('Run Tests & Coverage') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pytest --cov=app --cov-report=xml
+                '''
+            }
         }
-      }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh '''
+                    sonar-scanner
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                docker build -t $DOCKER_IMAGE:latest .
+                '''
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u devang883020 --password-stdin
+                    docker push $DOCKER_IMAGE:latest
+                    '''
+                }
+            }
+        }
     }
-  }
+
+    post {
+        failure {
+            echo "❌ Pipeline failed. Fix quality issues before deployment."
+        }
+        success {
+            echo "✅ Pipeline succeeded. Image pushed to DockerHub."
+        }
+    }
 }
