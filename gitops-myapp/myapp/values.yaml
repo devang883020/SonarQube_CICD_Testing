@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: devangkubde88/my-docker-app
-  tag: 54
+  tag: 56
   pullPolicy: Always
 
 service:
