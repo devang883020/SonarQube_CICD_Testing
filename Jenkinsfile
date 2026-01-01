@@ -98,7 +98,7 @@ SONARQUBE_ENV = 'sonarqube'
         git clone $GITOPS_REPO /tmp/gitops-myapp
         cd /tmp/gitops-myapp
 
-        sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" helm/myapp/values.yaml
+        sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops-myapp/myapp/values.yaml
 
         git config user.email "jenkins@ci.com"
         git config user.name "Jenkins CI"
