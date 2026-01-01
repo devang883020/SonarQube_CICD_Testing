@@ -27,6 +27,7 @@ Immutable Docker images
 GitOps-based CD using Helm + ArgoCD
 
 # 🏗️ Architecture Overview
+
 Developer → GitHub → Jenkins (CI)
 
                     ├─ Tests + Coverage
