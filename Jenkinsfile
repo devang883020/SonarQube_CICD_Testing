@@ -15,6 +15,16 @@ SONARQUBE_ENV = 'sonarqube'
                 checkout scm
             }
         }
+        stage('Cleanup Workspace') {
+    steps {
+        sh '''
+        find . -type d -name "__pycache__" -exec rm -rf {} +
+        find . -type f -name "*.pyc" -delete
+        '''
+    }
+}
+
+        
 
         stage('Unit Tests') {
             steps {
