@@ -79,7 +79,7 @@ pipeline {
                     string(credentialsId: 'dockerhub-cred', variable: 'DOCKER_PASS')
                 ]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u devang883020 --password-stdin
+                    echo "$DOCKER_PASS" | docker login -u devangkubde88 --password-stdin
                     docker push $DOCKER_IMAGE:latest
                     '''
                 }
