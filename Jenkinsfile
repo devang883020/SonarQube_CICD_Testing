@@ -8,16 +8,7 @@ pipeline {
 SONARQUBE_ENV = 'sonarqube'
     }
     
-    stage('CI Guard') {
-    steps {
-        script {
-            if (env.GIT_COMMIT_MESSAGE?.contains('[skip ci]')) {
-                currentBuild.result = 'SUCCESS'
-                error('Skipping CI for GitOps commit')
-            }
-        }
-    }
-}
+    
 
 
 
@@ -37,6 +28,17 @@ SONARQUBE_ENV = 'sonarqube'
     }
 }
 
+stage('CI Guard') {
+    steps {
+        script {
+            if (env.GIT_COMMIT_MESSAGE?.contains('[skip ci]')) {
+                currentBuild.result = 'SUCCESS'
+                error('Skipping CI for GitOps commit')
+            }
+        }
+    }
+}
+       
         
 
         stage('Unit Tests') {
