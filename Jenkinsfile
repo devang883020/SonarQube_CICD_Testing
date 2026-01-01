@@ -7,6 +7,19 @@ pipeline {
         GITOPS_REPO = "https://github.com/devang883020/SonarQube_CICD_Testing.git"
 SONARQUBE_ENV = 'sonarqube'
     }
+    
+    stage('CI Guard') {
+    steps {
+        script {
+            if (env.GIT_COMMIT_MESSAGE?.contains('[skip ci]')) {
+                currentBuild.result = 'SUCCESS'
+                error('Skipping CI for GitOps commit')
+            }
+        }
+    }
+}
+
+
 
     stages {
 
