@@ -90,7 +90,7 @@ pipeline {
     }
 }
 
-
+}
     post {
         success {
             echo "✅ Pipeline successful — Quality gate passed & image pushed"
