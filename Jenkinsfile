@@ -27,13 +27,25 @@ SONARQUBE_ENV = 'sonarqube'
             }
         }
 
+
         stage('SonarQube Analysis') {
-            steps {
-          withSonarQubeEnv("${SONARQUBE_ENV}") {
-             sh 'sonar-scanner'
-           }
-      }
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            script {
+                def scannerHome = tool 'sonar-scanner'
+                sh """
+                ${scannerHome}/bin/sonar-scanner \
+                -Dsonar.projectKey=myapp \
+                -Dsonar.sources=app \
+                -Dsonar.tests=tests \
+                -Dsonar.python.coverage.reportPaths=coverage.xml
+                """
+            }
+        }
     }
+}
+   
+ 
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
