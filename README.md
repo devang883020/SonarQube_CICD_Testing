@@ -28,6 +28,7 @@ GitOps-based CD using Helm + ArgoCD
 
 # 🏗️ Architecture Overview
 Developer → GitHub → Jenkins (CI)
+
                     ├─ Tests + Coverage
                     ├─ SonarQube Quality Gate
                     ├─ Docker Build & Push
@@ -110,17 +111,7 @@ GitOps ensures no direct cluster access from Jenkins
 
 Quality gates prevent bad code reaching production
 
-# 📂 Repository Structure (Simplified)
-.
-├── app/                    # Python application
-├── tests/                  # Unit tests
-├── Jenkinsfile             # CI pipeline
-├── Dockerfile              # Docker image build
-├── helm/                   # Helm chart
-│   ├── templates/
-│   └── values.yaml
-├── gitops/                 # GitOps configs (image updates)
-└── README.md
+
 
 # ✅ Key Highlights
 
