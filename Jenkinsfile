@@ -118,7 +118,7 @@ stage('CI Guard') {
         git config user.email "jenkins@ci.com"
         git config user.name "Jenkins CI"
         git add gitops-myapp/myapp/values.yaml
-        git commit -m "Update image tag to ${IMAGE_TAG}"
+        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
         git push origin main
         '''
     }
