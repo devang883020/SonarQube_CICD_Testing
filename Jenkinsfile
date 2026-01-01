@@ -88,11 +88,11 @@ SONARQUBE_ENV = 'sonarqube'
                 git clone $GITOPS_REPO gitops
                 cd gitops
 
-                sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" helm/myapp/values.yaml
+                sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops-myapp/myapp/values.yaml
 
                 git config user.email "jenkins@ci.com"
                 git config user.name "Jenkins CI"
-                git add helm/myapp/values.yaml
+                git add gitops-myapp/myapp/values.yaml
                 git commit -m "Update image tag to ${IMAGE_TAG}"
                 git push origin main
                 '''
