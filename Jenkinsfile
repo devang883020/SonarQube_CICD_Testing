@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONARQUBE_ENV = 'sonarqube'
-        DOCKER_IMAGE  = 'devangkube88/my-docker-app'
+        DOCKER_IMAGE  = 'devangkubde88/my-docker-app'
     }
 
     stages {
@@ -14,13 +14,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Python Environment') {
             steps {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
                 pip install --upgrade pip
-               
+                pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Install Test Dependencies') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pip install pytest pytest-cov
                 '''
             }
         }
@@ -37,9 +46,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh '''
-                    sonar-scanner
-                    '''
+                    sh 'sonar-scanner'
                 }
             }
         }
@@ -62,7 +69,9 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                withCredentials([string(credentialsId: 'dockerhub-cred', variable: 'DOCKER_PASS')]) {
+                withCredentials([
+                    string(credentialsId: 'dockerhub-cred', variable: 'DOCKER_PASS')
+                ]) {
                     sh '''
                     echo "$DOCKER_PASS" | docker login -u devang883020 --password-stdin
                     docker push $DOCKER_IMAGE:latest
@@ -73,11 +82,11 @@ pipeline {
     }
 
     post {
-        failure {
-            echo "❌ Pipeline failed. Fix quality issues before deployment."
-        }
         success {
-            echo "✅ Pipeline succeeded. Image pushed to DockerHub."
+            echo "✅ Pipeline successful — Quality gate passed & image pushed"
+        }
+        failure {
+            echo "❌ Pipeline failed — fix errors before proceeding"
         }
     }
 }
