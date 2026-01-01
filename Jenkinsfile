@@ -92,22 +92,24 @@ SONARQUBE_ENV = 'sonarqube'
         }
 
         stage('Update Helm Values (GitOps)') {
-            steps {
-                sh '''
-                rm -rf gitops
-                git clone $GITOPS_REPO gitops
-                cd gitops
+    steps {
+        sh '''
+        rm -rf /tmp/gitops-myapp
+        git clone $GITOPS_REPO /tmp/gitops-myapp
+        cd /tmp/gitops-myapp
 
-                sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops-myapp/myapp/values.yaml
+        sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" helm/myapp/values.yaml
 
-                git config user.email "jenkins@ci.com"
-                git config user.name "Jenkins CI"
-                git add gitops-myapp/myapp/values.yaml
-                git commit -m "Update image tag to ${IMAGE_TAG}"
-                git push origin main
-                '''
-            }
-        }
+        git config user.email "jenkins@ci.com"
+        git config user.name "Jenkins CI"
+        git add gitops-myapp/myapp/values.yaml
+        git commit -m "Update image tag to ${IMAGE_TAG}"
+        git push origin main
+        '''
+    }
+}
+
+
     }
 
     post {
