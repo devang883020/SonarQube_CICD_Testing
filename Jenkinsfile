@@ -1,46 +1,47 @@
 pipeline {
     agent any
-
     environment {
         IMAGE_NAME = "devangkubde88/my-docker-app"
         IMAGE_TAG  = "${BUILD_NUMBER}"
         GITOPS_REPO = "https://github.com/devang883020/SonarQube_CICD_Testing.git"
-SONARQUBE_ENV = 'sonarqube'
+        SONARQUBE_ENV = 'sonarqube'
     }
     
     
-
-
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
         stage('Cleanup Workspace') {
-    steps {
-        sh '''
-        find . -type d -name "__pycache__" -exec rm -rf {} +
-        find . -type f -name "*.pyc" -delete
-        '''
-    }
-}
-
-stage('CI Guard') {
-    steps {
-        script {
-            if (env.GIT_COMMIT_MESSAGE?.contains('[skip ci]')) {
-                currentBuild.result = 'SUCCESS'
-                error('Skipping CI for GitOps commit')
+            steps {
+                sh '''
+                find . -type d -name "__pycache__" -exec rm -rf {} +
+                find . -type f -name "*.pyc" -delete
+                '''
             }
         }
-    }
-}
+        stage('CI Guard') {
+            steps {
+                script {
+                    // Get the actual commit message from git
+                    def commitMessage = sh(
+                        script: 'git log -1 --pretty=%B',
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "Commit message: ${commitMessage}"
+                    
+                    if (commitMessage.contains('[skip ci]')) {
+                        currentBuild.result = 'SUCCESS'
+                        error('Skipping CI for GitOps commit')
+                    }
+                }
+            }
+        }
        
         
-
         stage('Unit Tests') {
             steps {
                 sh '''
@@ -51,24 +52,22 @@ stage('CI Guard') {
                 '''
             }
         }
-
-
         stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('sonarqube') {
-            script {
-                def scannerHome = tool 'sonar-scanner'
-                sh """
-                ${scannerHome}/bin/sonar-scanner \
-                -Dsonar.projectKey=myapp \
-                -Dsonar.sources=app \
-                -Dsonar.tests=tests \
-                -Dsonar.python.coverage.reportPaths=coverage.xml
-                """
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    script {
+                        def scannerHome = tool 'sonar-scanner'
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=myapp \
+                        -Dsonar.sources=app \
+                        -Dsonar.tests=tests \
+                        -Dsonar.python.coverage.reportPaths=coverage.xml
+                        """
+                    }
+                }
             }
         }
-    }
-}
    
  
         stage('Quality Gate') {
@@ -78,7 +77,6 @@ stage('CI Guard') {
                 }
             }
         }
-
         stage('Docker Build') {
             steps {
                 sh '''
@@ -87,7 +85,6 @@ stage('CI Guard') {
                 '''
             }
         }
-
         stage('Docker Push') {
             steps {
                 withCredentials([
@@ -105,28 +102,30 @@ stage('CI Guard') {
                 }
             }
         }
-
         stage('Update Helm Values (GitOps)') {
-    steps {
-        sh '''
-        rm -rf /tmp/gitops-myapp
-        git clone $GITOPS_REPO /tmp/gitops-myapp
-        cd /tmp/gitops-myapp
-
-        sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops-myapp/myapp/values.yaml
-
-        git config user.email "jenkins@ci.com"
-        git config user.name "Jenkins CI"
-        git add gitops-myapp/myapp/values.yaml
-        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
-        git push origin main
-        '''
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-cred',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_PASS'
+                    )
+                ]) {
+                    sh '''
+                    rm -rf /tmp/gitops-myapp
+                    git clone $GITOPS_REPO /tmp/gitops-myapp
+                    cd /tmp/gitops-myapp
+                    sed -i "s/tag:.*/tag: ${IMAGE_TAG}/" gitops-myapp/myapp/values.yaml
+                    git config user.email "jenkins@ci.com"
+                    git config user.name "Jenkins CI"
+                    git add gitops-myapp/myapp/values.yaml
+                    git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
+                    git push https://${GIT_USER}:${GIT_PASS}@github.com/devang883020/SonarQube_CICD_Testing.git main
+                    '''
+                }
+            }
+        }
     }
-}
-
-
-    }
-
     post {
         failure {
             echo "❌ Pipeline failed — fix errors before proceeding"
