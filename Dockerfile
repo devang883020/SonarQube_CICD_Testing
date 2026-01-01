@@ -6,7 +6,8 @@ COPY requirements.txt /app
 RUN pip install pytest pytest-cov
 
 
-COPY app.py /app
+COPY app/app.py /app/app.py
+
 
 EXPOSE 5000
 
