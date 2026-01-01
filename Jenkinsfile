@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "devangkubde88/my-docker-app"
         IMAGE_TAG  = "${BUILD_NUMBER}"
         GITOPS_REPO = "https://github.com/devang883020/SonarQube_CICD_Testing.git"
+SONARQUBE_ENV = 'sonarqube'
     }
 
     stages {
@@ -28,16 +29,11 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''
-                    sonar-scanner \
-                      -Dsonar.projectKey=myapp \
-                      -Dsonar.sources=.
-                    '''
-                }
-            }
-        }
-
+          withSonarQubeEnv("${SONARQUBE_ENV}") {
+             sh 'sonar-scanner'
+           }
+      }
+    }
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
