@@ -1,0 +1,11 @@
+replicaCount: 2
+
+image:
+  repository: devangkubde88/myapp
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5000
