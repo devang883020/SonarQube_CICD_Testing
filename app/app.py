@@ -1,33 +1,28 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from logic import add, subtract, divide
 
 app = Flask(__name__)
 
+@app.route("/add")
+def add_route():
+    a = int(request.args.get("a"))
+    b = int(request.args.get("b"))
+    return jsonify(result=add(a, b)), 200
 
-@app.route("/", methods=["GET"])
-def health():
-    return jsonify(
-        status="ok",
-        message="MyApp is running successfully"
-    ), 200
+@app.route("/subtract")
+def subtract_route():
+    a = int(request.args.get("a"))
+    b = int(request.args.get("b"))
+    return jsonify(result=subtract(a, b)), 200
 
-
-@app.route("/add/<int:a>/<int:b>", methods=["GET"])
-def add(a: int, b: int):
-    return jsonify(result=a + b), 200
-
-
-@app.route("/subtract/<int:a>/<int:b>", methods=["GET"])
-def subtract(a: int, b: int):
-    return jsonify(result=a - b), 200
-
-
-@app.route("/divide/<int:a>/<int:b>", methods=["GET"])
-def divide(a: int, b: int):
-    if b == 0:
-        return jsonify(error="division by zero"), 400
-    return jsonify(result=a / b), 200
-
+@app.route("/divide")
+def divide_route():
+    a = int(request.args.get("a"))
+    b = int(request.args.get("b"))
+    try:
+        return jsonify(result=divide(a, b)), 200
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
 
 if __name__ == "__main__":
-    # VERY IMPORTANT for Kubernetes
     app.run(host="0.0.0.0", port=5000)
