@@ -45,12 +45,17 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'sonar-scanner'
-                }
+    steps {
+        withSonarQubeEnv('sonarqube') {
+            script {
+                def scannerHome = tool 'sonar-scanner'
+                sh """
+                ${scannerHome}/bin/sonar-scanner
+                """
             }
         }
+    }
+}
 
         stage('Quality Gate') {
             steps {
